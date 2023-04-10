@@ -24,7 +24,7 @@ module alu_tb ();
     alu_func_e func;
     logic [31:0] A, B, Result;
 
-    alu alu(.a(A), .b(B), .result(Result), .func(func));
+    alu alu(.op1_i(A), .op2_i(B), .alu_func_i(func), .result_o(Result));
 
     initial begin
         A = 0; B = 0; func = _ADD; #1
