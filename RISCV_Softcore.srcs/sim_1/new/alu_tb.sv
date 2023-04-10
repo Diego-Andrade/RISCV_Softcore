@@ -1,17 +1,15 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Engineer: Diego Andrade (bets636@gmail.com
 // 
 // Create Date: 04/09/2023 01:19:29 AM
-// Design Name: 
+// Design Name: RISCV Softcore
 // Module Name: alu_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
+// Project Name: RISCV_Softcore
+// Target Devices: Xilinx Artix-7
+// Description: Testbench for ALU
 // 
-// Dependencies: 
+// Dependencies: riscv_isa.sv
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -21,24 +19,26 @@
 
 
 module alu_tb ();
-    import riscv_isa::*;
+    import rv32i_functions::*;
 
-    opcode_e opcode;
+    alu_func_e func;
     logic [31:0] A, B, Result;
 
-    alu alu(.*);
+    alu alu(.a(A), .b(B), .result(Result), .func(func));
 
     initial begin
-        A = 0; B = 0; opcode = ADD;
-        #1
-        A = 2; B = 5;
-        #1
-        opcode = SUB;
-        #1
-        A = 3; B = 6;
-        #1
-        opcode = ADD;
-        #1
+        A = 0; B = 0; func = _ADD; #1
+        assert(Result == 0) else $display ("Add failed"); #1
+        
+        A = 77; B = 222; func = _ADD; #1
+        assert(Result == 299) else $display ("Add failed"); #1
+        
+        A = 24; B = -224; func = _ADD; #1
+        assert(Result == -200) else $display ("Add negative failed"); #1
+        
+        A = 123; B = 223; func = _SUB; #1
+        assert(Result == 100) else $display ("Sub failed"); #1
+        
         $finish;
     end
     
