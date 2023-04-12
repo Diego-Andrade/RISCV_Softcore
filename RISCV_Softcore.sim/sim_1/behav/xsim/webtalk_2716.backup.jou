@@ -2,8 +2,8 @@
 # Webtalk v2018.2.2 (64-bit)
 # SW Build 2348494 on Mon Oct  1 18:25:44 MDT 2018
 # IP Build 2318053 on Mon Oct  1 21:44:26 MDT 2018
-# Start of session at: Tue Apr 11 12:27:24 2023
-# Process ID: 12544
+# Start of session at: Tue Apr 11 12:25:58 2023
+# Process ID: 2716
 # Current directory: C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.sim/sim_1/behav/xsim
 # Command line: wbtcv.exe -mode batch -source C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.sim/sim_1/behav/xsim/xsim.dir/softcore_tb_behav/webtalk/xsim_webtalk.tcl -notrace
 # Log file: C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.sim/sim_1/behav/xsim/webtalk.log

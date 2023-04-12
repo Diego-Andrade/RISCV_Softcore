@@ -21,20 +21,22 @@ module cu_fsm
     import rv32i_opcode::*;
     import rv32i_functions::*;
 (
-    input logic     clk_i,          // Clock
-    input logic     reset_i,        // Synchronize reset active high
-    input logic     intr_i,
+    input logic         clk_i,          // Clock
+    input logic         reset_i,        // Sync reset
+    input logic         intr_i,         // Sync interrupt 
 
-    opcode_e        opcode_i,
-    csr_func_e      csr_func_i,
+    input opcode_e      opcode_i,       // Instruction opcode
+    input csr_func_e    csr_func_i,     // Instruction func3 bits which are used for CSR codes
     
-    output logic    pc_w_o,         // Program counter write enable
-    output logic    rf_w_o,         // Register file write enable
-    output logic    mem_we2_o,      // Memory interface
-                    mem_rden1_o,     
-                    mem_rden2_o,
-    output logic    csr_w_o,        // Control and Status Register write enable
-    output logic    intr_taken_o    // Signal for interrupt taken
+    output logic        pc_w_o,         // Program counter write enable
+    output logic        rf_w_o,         // Register file write enable
+    
+    // Memory interface
+    output logic        mem_we2_o,      // Mem write enable
+                        mem_rden1_o,    // Mem read 1 enable
+                        mem_rden2_o,    // Mem read 2 enable
+    output logic        csr_w_o,        // Control and Status Register write enable
+    output logic        intr_taken_o    // Signal for interrupt taken
 );
 
     // FSM states
@@ -43,7 +45,6 @@ module cu_fsm
     // State trackers
     state_e present_state = FETCH, 
             next_state    = FETCH;
-    
     
     // Transition state on clock posedge
     always_ff @ (posedge clk_i) begin

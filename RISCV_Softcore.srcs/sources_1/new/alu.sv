@@ -18,13 +18,14 @@
 
 
 module alu
+    import rv32i::word;
     import rv32i_functions::*;
 (
-    input alu_func_e            alu_func_i,
-    input logic         [31:0]  op1_i, 
-    input logic         [31:0]  op2_i,
-    
-    output logic        [31:0]  result_o
+    input alu_func_e    alu_func_i,     // ALU function to perform
+    input word          op1_i,          // Operand 1
+    input word          op2_i,          // Operand 2
+
+    output word         result_o        // Result of operation
 );
  
     always_comb begin
@@ -36,11 +37,14 @@ module alu
             _XOR:   result_o = op1_i ^ op2_i;
             _SRL:   result_o = op1_i >> op2_i[4:0];
             _SLL:   result_o = op1_i << op2_i[4:0];
-            _SRA:   result_o =  $signed(op1_i) >>> op2_i[4:0];
+            _SRA:   result_o = $signed(op1_i) >>> op2_i[4:0];
             _SLT:   result_o = $signed(op1_i) < $signed(op2_i) ? 1: 0;
             _SLTU:  result_o = op1_i < op2_i ? 1: 0;
             _LUI:   result_o = op1_i; //copy
+            
+            default: result_o = 0;
         endcase
     end
+
 
 endmodule

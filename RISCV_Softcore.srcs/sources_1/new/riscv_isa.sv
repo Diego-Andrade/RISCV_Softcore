@@ -19,9 +19,15 @@
 
 package rv32i;
 
+    // Data definitions
+    typedef logic [31:0]    word;
+    typedef logic [15:0]    half_word;
+    
+    typedef logic [4:0]     register;
+
     // Instruction type encoding
     typedef union packed {
-        logic [31:0] data;
+        word data;
     
         struct packed {
             logic [6:0]     funct7;
