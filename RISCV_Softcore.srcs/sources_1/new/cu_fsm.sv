@@ -21,20 +21,27 @@ module cu_fsm
     import rv32i_opcode::*;
     import rv32i_functions::*;
 (
+    // Control Signals
     input logic         clk_i,          // Clock
     input logic         reset_i,        // Sync reset
     input logic         intr_i,         // Sync interrupt 
 
-    input opcode_e      opcode_i,       // Instruction opcode
-    input csr_func_e    csr_func_i,     // Instruction func3 bits which are used for CSR codes
+    // Instruction info
+    input opcode_e      opcode_i,       // Opcode
+    input csr_func_e    csr_func_i,     // Func3 bits which are used for CSR codes
     
-    output logic        pc_w_o,         // Program counter write enable
-    output logic        rf_w_o,         // Register file write enable
+    // Program Counter
+    output logic        pc_w_o,         // Write enable
     
-    // Memory interface
-    output logic        mem_we2_o,      // Mem write enable
-                        mem_rden1_o,    // Mem read 1 enable
-                        mem_rden2_o,    // Mem read 2 enable
+    // Base Registers
+    output logic        br_w_o,         // Write enable
+    
+    // Memory
+    output logic        mem_we2_o,      // Write enable
+                        mem_rden1_o,    // Read 1 enable
+                        mem_rden2_o,    // Read 2 
+
+    // Other System outputs
     output logic        csr_w_o,        // Control and Status Register write enable
     output logic        intr_taken_o    // Signal for interrupt taken
 );
@@ -51,20 +58,21 @@ module cu_fsm
         present_state   <= reset_i ?    FETCH   :   next_state;
     end
     
-    // Output logic
+    // FSM logic
     always_comb begin
-        pc_w_o          = '0;       // Setting default for all outputs,
-        rf_w_o          = '0;       // low unless otherwise needed by branch
-        mem_we2_o       = '0;       // since many paths only ever assert high
+        // Defaults: Unasserted unless otherwise needed by branch
+        pc_w_o          = '0;
+        br_w_o          = '0;
+        mem_we2_o       = '0;
         mem_rden1_o     = '0;
         mem_rden2_o     = '0;
         csr_w_o         = '0;
         intr_taken_o    = '0;
 
-        next_state      = FETCH;    // Default softcore to continue processing instructions
+        next_state      = FETCH;    // Continue processing instructions
 
         // Update outpus depending on state and inputs
-        case (present_state)
+        unique case (present_state)
             // Handle interrupt jumping to ISR
             INTR: begin
                 pc_w_o          = '1;
@@ -82,7 +90,7 @@ module cu_fsm
             // to write in Register FIle
             WRITEBACK: begin
                 pc_w_o          = '1;
-                rf_w_o          = '1;
+                br_w_o          = '1;
                 next_state      = intr_i ?  INTR    :   FETCH;
             end
             
@@ -115,8 +123,8 @@ module cu_fsm
                     end
                 endcase
             end // EXEC end
-        endcase
-    end // Output logic end
+        endcase // FSM end
+    end // Comb end
 
 
 endmodule

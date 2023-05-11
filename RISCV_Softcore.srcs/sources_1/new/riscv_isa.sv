@@ -22,67 +22,69 @@ package rv32i;
     // Data definitions
     typedef logic [31:0]    word;
     typedef logic [15:0]    half_word;
-    
+
     typedef logic [4:0]     register;
 
     // Instruction type encoding
     typedef union packed {
         word data;
-    
+
         struct packed {
             logic [6:0]     funct7;
             logic [4:0]     rs2;
             logic [4:0]     rs1;
             logic [2:0]     funct3;
             logic [4:0]     rd;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } rtype_s;
-        
+
         struct packed {
             logic [11:0]    imm_11to0;
             logic [4:0]     rs1;
             logic [2:0]     funct3;
             logic [4:0]     rd;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } itype_s;
-        
+
         struct packed {
             logic [6:0]     imm_11to5;
             logic [4:0]     rs2;
             logic [4:0]     rs1;
             logic [2:0]     funct3;
             logic [4:0]     imm_4to0;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } stype_s;
-        
+
          struct packed {
             logic [6:0]     imm_12_10to5;
             logic [4:0]     rs2;
             logic [4:0]     rs1;
             logic [2:0]     funct3;
             logic [4:0]     imm_4to1_11;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } btype_s;
 
         struct packed {
             logic [19:0]    imm_31to12;
             logic [4:0]     rd;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } ustype_s;
-     
+
         struct packed {
             logic [19:0]    imm_20_10to1_11_19to12;
             logic [4:0]     rd;
-            logic [6:0]     opcode;
+            opcode_e        opcode;
         } jtype_s;       
-        
+
     } instruction_u;
 
 endpackage
 
 package rv32i_functions;
 
-    // ALU functions, composed of { func7[5], func3 }
+    // ALU functions
+    // Note: Most match instruction { func7[5], func3 } bits,
+    //       _COPY exception
     typedef enum logic [3:0] { 
         _ADD    = {1'b0, 3'b000},
         _SUB    = {1'b1, 3'b000}, 
@@ -94,9 +96,11 @@ package rv32i_functions;
         _SRA    = {1'b1, 3'b101},
         _OR     = {1'b0, 3'b110},
         _AND    = {1'b0, 3'b111},
-        _LUI    = {1'b1, 3'b001}
+        _COPY   = {1'b1, 3'b001},
+        _NONE   = {1'b1, 3'b111}
     } alu_func_e;
     
+    // CSR funcions, composed of func3
     typedef enum logic [2:0] {
         _RW     = 3'b001,
         _RWI    = 3'b101,
@@ -110,7 +114,8 @@ endpackage
 
 package rv32i_opcode;
 
-    // Opcodes for 32-bit instructions   //first two bits are always 11
+    // Opcodes for 32-bit instructions   
+    // Note: First two bits are always 11 for rv32i
     typedef enum logic [6:0] {
         LUI      = 7'b0110111,          
         AUIPC    = 7'b0010111,

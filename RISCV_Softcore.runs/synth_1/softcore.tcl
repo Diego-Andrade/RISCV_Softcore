@@ -17,7 +17,6 @@ proc create_report { reportName command } {
     send_msg_id runtcl-5 warning "$msg"
   }
 }
-set_msg_config -id {Common 17-41} -limit 10000000
 create_project -in_memory -part xc7a35tcpg236-1
 
 set_param project.singleFileAddWarning.threshold 0
@@ -33,7 +32,9 @@ read_verilog -library xil_defaultlib -sv {
   C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/riscv_isa.sv
   C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/alu.sv
   C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/base_regs.sv
+  C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/cu_decoder.sv
   C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/cu_fsm.sv
+  C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/prog_counter.sv
   C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.srcs/sources_1/new/softcore.sv
 }
 # Mark all dcp files as not used in implementation to prevent them from being

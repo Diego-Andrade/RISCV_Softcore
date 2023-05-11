@@ -29,7 +29,7 @@ module alu
 );
  
     always_comb begin
-        case (alu_func_i)
+        unique case (alu_func_i)
             _ADD:   result_o = op1_i + op2_i;
             _SUB:   result_o = op1_i - op2_i;
             _OR:    result_o = op1_i | op2_i;
@@ -40,9 +40,7 @@ module alu
             _SRA:   result_o = $signed(op1_i) >>> op2_i[4:0];
             _SLT:   result_o = $signed(op1_i) < $signed(op2_i) ? 1: 0;
             _SLTU:  result_o = op1_i < op2_i ? 1: 0;
-            _LUI:   result_o = op1_i; //copy
-            
-            default: result_o = 0;
+            _COPY:   result_o = op1_i;
         endcase
     end
 
