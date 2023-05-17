@@ -26,7 +26,7 @@ module prog_counter
     
     // Writes
     input logic     w_en_i,         // Write enable
-    input word      data_i,         // Write data
+    input word      w_data_i,       // Write data
  
     // Status
     output word     prog_count_o    // Program count

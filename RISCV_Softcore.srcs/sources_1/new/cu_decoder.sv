@@ -18,6 +18,7 @@
 
 
 module cu_decoder
+    import rv32i::word;
     import rv32i_opcode::*;
     import rv32i::instruction_u;
     import rv32i_functions::*;
@@ -46,14 +47,7 @@ module cu_decoder
 )
 (
     // Instruction data
-    input opcode_e          opcode_i,
-    input logic     [2:0]   func3_i,
-    input logic     [6:0]   func7_i,
-    
-    // Branch
-    input logic             br_eq_i,
-    input logic             br_lt_i,
-    input logic             br_ltu_i,
+    input word              raw_instr_i,
     
     // ALU control signals
     output logic            alu_src_op1_o,
@@ -62,9 +56,9 @@ module cu_decoder
     
     // Base Registers
     output logic    [1:0]   base_reg_src_o,
-    
-    // Program Counter control signals
-    output logic    [3:0]   pc_src_o
+ 
+    // Decoded Instruction
+    output word             instr_o
 );
 
     always_comb begin
@@ -73,42 +67,78 @@ module cu_decoder
         alu_src_op2_o   = ALU_SRC_RS2;
         alu_func_o      = _NONE;
         base_reg_src_o  = BASE_REG_SRC_ALU_RESULT;
-        pc_src_o        = PC_SRC_PC_4;
         
         // Handle instruction types
-        unique case (opcode_i)
+        unique case (raw_instr_i[6:0])
             LUI: begin
+                instr.utype_s.imm20     = raw_instr_i[31:12];
+                instr.utype_s.rd_addr   = raw_instr_i[11:7];
+                instr.utype_s.opcode    = LUI;
+            
                 alu_src_op1_o   = ALU_SRC_U_IMMED;
                 alu_func_o      = _COPY;
             end
 
             AUIPC: begin
+                instr.utype_s.imm20     = raw_instr_i[31:12];
+                instr.utype_s.rd_addr   = raw_instr_i[11:7];
+                instr.utype_s.opcode    = AUIPC;
+            
                 alu_src_op1_o   = ALU_SRC_U_IMMED;
                 alu_src_op2_o   = ALU_SRC_PC;
                 alu_func_o      = _ADD;
             end
 
             JAL: begin
+                instr.jtype_s.imm20     = {raw_instr_i[19:12], raw_instr_i[20], raw_instr_i[30:21], 1'b0};
+                instr.jtype_s.rd_addr   = raw_instr_i[11:7];
+                instr.jtype_s.opcode    = JAL;
+
                 alu_src_op1_o   = ALU_SRC_U_IMMED;
                 alu_src_op2_o   = ALU_SRC_PC;
                 alu_func_o      = _ADD;
                 base_reg_src_o  = BASE_REG_SRC_PC_4;
-                pc_src_o        = PC_SRC_JAL;
             end
- 
+
             JALR: begin
+                instr.itype_s.imm12     = raw_instr_i[31:20];
+                instr.itype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.itype_s.func3     = raw_instr_i[14:12];
+                instr.itype_s.rd_addr   = raw_instr_i[11:7];
+                instr.itype_s.opcode    = JALR;
+
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_I_IMMED;
                 alu_func_o      = _ADD;
                 base_reg_src_o  = BASE_REG_SRC_PC_4;
-                pc_src_o        = PC_SRC_JALR;
             end
 
             BRANCH: begin
-                pc_src_o        = PC_SRC_BRANCH;
+                instr.btype_s.imm12     = {raw_instr_i[7], raw_instr_i[30:25], raw_instr_i[11:8], 1'b0};
+                instr.btype_s.rs2_addr  = raw_instr_i[24:20];
+                instr.btype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.btype_s.func3     = raw_instr_i[14:12];
+                instr.btype_s.opcode    = BRANCH;
+
+                alu_src_op1_o   = ALU_SRC_RS1;
+                alu_src_op2_o   = ALU_SRC_I_IMMED;
+                unique case (instr.btype_s.func3)
+                    _EQ: alu_func_o = _BEQ;
+                    _NE: alu_func_o = _BEQ;
+                    _LT: alu_func_o = _BLT;
+                    _GE: alu_func_o = _BLT;
+                    _LTU: alu_func_o = _BLTU;
+                    _GEU: alu_func_o = _BLTU;
+                endcase
             end
 
             LOAD: begin
+                instr.itype_s.imm12     = raw_instr_i[31:20];
+                instr.itype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.itype_s.func3     = raw_instr_i[14:12];
+                instr.itype_s.rd_addr   = raw_instr_i[11:7];
+                instr.itype_s.opcode    = LOAD;
+
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_I_IMMED;
                 alu_func_o      = _ADD;
@@ -116,6 +146,12 @@ module cu_decoder
             end
 
             STORE: begin
+                instr.stype_s.imm12     = {raw_instr_i[31:25], raw_instr_i[11:7]};
+                instr.stype_s.rs2_addr  = raw_instr_i[24:20];
+                instr.stype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.stype_s.func3     = raw_instr_i[14:12];
+                instr.stype_s.opcode    = STORE;
+
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_S_IMMED;
                 alu_func_o      = _ADD;
@@ -123,22 +159,35 @@ module cu_decoder
             end
 
             OP_IMM: begin
+                instr.itype_s.imm12     = raw_instr_i[31:20];
+                instr.itype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.itype_s.func3     = raw_instr_i[14:12];
+                instr.itype_s.rd_addr   = raw_instr_i[11:7];
+                instr.itype_s.opcode    = OP_IMM;
+
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_I_IMMED;
 
-                // Handle special cases shift right (SR**) and shift left (SL**)
-                if (func3_i == 3'b001 || func3_i == 3'b101)
-                    alu_func_o  = alu_func_e'({1'b0, func3_i});
+                // Handle special I-Type cases: shift right (SR**) and shift left (SL**)
+                if (instr.itype_s.func3 == 3'b001 || instr.itype_s.func3 == 3'b101)
+                    alu_func_o  = alu_func_e'({instr.itype_s.imm12[10], instr.itype_s.func3});
                 else
-                    alu_func_o  = alu_func_e'({func7_i[5], func3_i});
+                    alu_func_o  = alu_func_e'({1'b0, instr.itype_s.func3});
                     
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT; 
             end
 
             OP: begin
+                instr.rtype_s.func7     = raw_instr_i[31:25];
+                instr.rtype_s.rs2_addr  = raw_instr_i[24:20];
+                instr.rtype_s.rs1_addr  = raw_instr_i[19:15];
+                instr.rtype_s.func3     = raw_instr_i[14:12];
+                instr.rtype_s.rd_addr   = raw_instr_i[11:7];
+                instr.rtype_s.opcode    = OP;
+
                 alu_src_op1_o   = ALU_SRC_RS1;
-                alu_src_op2_o   = ALU_SRC_I_IMMED;
-                alu_func_o  = alu_func_e'({func7_i[5], func3_i});    
+                alu_src_op2_o   = ALU_SRC_RS2;
+                alu_func_o      = alu_func_e'({1'b0, instr.itype_s.func3});    
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT; 
             end
         endcase

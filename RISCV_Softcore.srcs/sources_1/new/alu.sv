@@ -40,7 +40,11 @@ module alu
             _SRA:   result_o = $signed(op1_i) >>> op2_i[4:0];
             _SLT:   result_o = $signed(op1_i) < $signed(op2_i) ? 1: 0;
             _SLTU:  result_o = op1_i < op2_i ? 1: 0;
-            _COPY:   result_o = op1_i;
+            _COPY:  result_o = op1_i;
+            _BEQ:   result_o = op1_i == op2_i;
+            _BLT:   result_o = $signed(op1_i) < $signed(op2_i);
+            _BLTU:  result_o = op1_i < op2_i;
+            _NONE:  result_o = 0;
         endcase
     end
 

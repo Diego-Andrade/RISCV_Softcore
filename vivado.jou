@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Vivado v2018.2.2 (64-bit)
+# SW Build 2348494 on Mon Oct  1 18:25:44 MDT 2018
+# IP Build 2318053 on Mon Oct  1 21:44:26 MDT 2018
+# Start of session at: Fri May 12 23:58:16 2023
+# Process ID: 1508
+# Current directory: C:/Users/Diego/Desktop/RISCV_Softcore
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent3768 C:\Users\Diego\Desktop\RISCV_Softcore\RISCV_Softcore.xpr
+# Log file: C:/Users/Diego/Desktop/RISCV_Softcore/vivado.log
+# Journal file: C:/Users/Diego/Desktop/RISCV_Softcore\vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.xpr
