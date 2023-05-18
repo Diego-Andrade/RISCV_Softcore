@@ -22,28 +22,28 @@ module cu_fsm
     import rv32i_functions::*;
 (
     // Control Signals
-    input logic         clk_i,          // Clock
-    input logic         reset_i,        // Sync reset
-    input logic         intr_i,         // Sync interrupt 
+    input logic         clk_i,              // Clock
+    input logic         reset_i,            // Sync reset
+    input logic         intr_i,             // Sync interrupt 
 
     // Instruction info
-    input opcode_e      opcode_i,       // Opcode
-    input csr_func_e    csr_func_i,     // Func3 bits which are used for CSR codes
+    input opcode_e      opcode_i,           // Opcode
+    input csr_func_e    csr_func_i,         // Func3 bits which are used for CSR codes
     
     // Program Counter
-    output logic        pc_w_o,         // Write enable
+    output logic        prog_count_w_en_o,  // Write enable
     
     // Base Registers
-    output logic        br_w_o,         // Write enable
+    output logic        base_reg_w_en_o,    // Write enable
     
     // Memory
-    output logic        mem_we2_o,      // Write enable
-                        mem_rden1_o,    // Read 1 enable
-                        mem_rden2_o,    // Read 2 
+    output logic        mem_r_en1_o,        // Read 1 enable
+    output logic        mem_r_en2_o,        // Read 2
+    output logic        mem_w_en2_o,        // Write 2 enable
 
     // Other System outputs
-    output logic        csr_w_o,        // Control and Status Register write enable
-    output logic        intr_taken_o    // Signal for interrupt taken
+    output logic        csr_w_o,            // Control and Status Register write enable
+    output logic        intr_taken_o        // Signal for interrupt taken
 );
 
     // FSM states
@@ -61,13 +61,13 @@ module cu_fsm
     // FSM logic
     always_comb begin
         // Defaults: Unasserted unless otherwise needed by branch
-        pc_w_o          = '0;
-        br_w_o          = '0;
-        mem_we2_o       = '0;
-        mem_rden1_o     = '0;
-        mem_rden2_o     = '0;
-        csr_w_o         = '0;
-        intr_taken_o    = '0;
+        prog_count_w_en_o   = '0;
+        base_reg_w_en_o     = '0;
+        mem_r_en1_o         = '0;
+        mem_r_en2_o         = '0;
+        mem_w_en2_o         = '0;
+        csr_w_o             = '0;
+        intr_taken_o        = '0;
 
         next_state      = FETCH;    // Continue processing instructions
 
@@ -75,23 +75,23 @@ module cu_fsm
         unique case (present_state)
             // Handle interrupt jumping to ISR
             INTR: begin
-                pc_w_o          = '1;
-                intr_taken_o    = '1;
-                next_state      = FETCH;         
+                prog_count_w_en_o   = '1;
+                intr_taken_o        = '1;
+                next_state          = FETCH;         
             end
 
             // Handle instruction fetch from memory
             FETCH: begin
-                mem_rden1_o     = '1;
+                mem_r_en1_o     = '1;
                 next_state      = EXEC;
             end
             
             // Handle updating Register File since extra clock needed from ALU computation
             // to write in Register FIle
             WRITEBACK: begin
-                pc_w_o          = '1;
-                br_w_o          = '1;
-                next_state      = intr_i ?  INTR    :   FETCH;
+                prog_count_w_en_o   = '1;
+                base_reg_w_en_o     = '1;
+                next_state          = intr_i ?  INTR    :   FETCH;
             end
             
             // Handle executing command
@@ -100,13 +100,13 @@ module cu_fsm
                     // Memory reading and Register File writing event, trigger writeback,
                     // ignoring incoming interrupts
                     LOAD: begin
-                        mem_rden2_o     = '1;
+                        mem_r_en2_o     = '1;
                         next_state      = WRITEBACK;
                     end
                     
                     // Memory write
                     STORE: begin
-                        mem_we2_o       = '1;
+                        mem_w_en2_o     = '1;
                         next_state      = intr_i ?  INTR    :   FETCH;
                     end
                     

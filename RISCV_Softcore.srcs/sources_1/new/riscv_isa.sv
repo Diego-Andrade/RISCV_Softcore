@@ -37,7 +37,7 @@ package rv32i;
         } rtype_s;
 
         struct packed {
-            logic [11:0]    imm12;          //imm_11to0;
+            logic [11:0]    raw_immed;          // immed [11:0]
             logic [4:0]     rs1_addr;
             logic [2:0]     func3;
             logic [4:0]     rd_addr;
@@ -45,29 +45,31 @@ package rv32i;
         } itype_s;
 
         struct packed {
-            logic [6:0]     imm12;          //imm_11to5;imm_4to0;
+            logic [6:0]     raw_immed_2;        // immed [11:5]
             logic [4:0]     rs2_addr;
             logic [4:0]     rs1_addr;
             logic [2:0]     func3;
+            logic [4:0]     raw_immed_1;        // immed [4:0]
             opcode_e        opcode;
         } stype_s;
 
          struct packed {
-            logic [11:0]    imm12;          //imm_12_10to5; imm_4to1_11;
+            logic [11:0]    raw_immed_2;        // immed [12][10:5]
             logic [4:0]     rs2_addr;
             logic [4:0]     rs1_addr;
             logic [2:0]     func3;
+            logic [4:0]     raw_immed_1;        // immed [4:1][11]
             opcode_e        opcode;
         } btype_s;
 
         struct packed {
-            logic [19:0]    imm20;          // instruction[31:12]
+            logic [19:0]    raw_immed;          // immed [11:0]
             logic [4:0]     rd_addr;
             opcode_e        opcode;
         } ustype_s;
 
         struct packed {
-            logic [19:0]    imm20;          // instruction[20][10:1][11][19:12]
+            logic [19:0]    raw_immed;          // immed[20][10:1][11][19:12]
             logic [4:0]     rd_addr;
             opcode_e        opcode;
         } jtype_s;       

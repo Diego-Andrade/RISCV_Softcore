@@ -11,3 +11,9 @@
 #-----------------------------------------------------------
 start_gui
 open_project C:/Users/Diego/Desktop/RISCV_Softcore/RISCV_Softcore.xpr
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
