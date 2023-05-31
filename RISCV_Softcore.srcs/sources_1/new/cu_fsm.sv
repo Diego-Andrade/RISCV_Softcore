@@ -22,36 +22,36 @@ module cu_fsm
     import rv32i_functions::*;
 (
     // Control Signals
-    input logic         clk_i,              // Clock
-    input logic         reset_i,            // Sync reset
-    input logic         intr_i,             // Sync interrupt 
+    input   logic       clk_i,              // Clock
+    input   logic       reset_i,            // Sync reset
+    input   logic       intr_i,             // Sync interrupt 
 
     // Instruction info
-    input opcode_e      opcode_i,           // Opcode
-    input csr_func_e    csr_func_i,         // Func3 bits which are used for CSR codes
+    input   opcode_e    opcode_i,           // Opcode
+    input   csr_func_e  csr_func_i,         // Func3 bits which are used for CSR codes
     
     // Program Counter
-    output logic        prog_count_w_en_o,  // Write enable
+    output  logic       prog_count_w_en_o,  // Write enable
     
     // Base Registers
-    output logic        base_reg_w_en_o,    // Write enable
+    output  logic       base_reg_w_en_o,    // Write enable
     
     // Memory
-    output logic        mem_r_en1_o,        // Read 1 enable
-    output logic        mem_r_en2_o,        // Read 2
-    output logic        mem_w_en2_o,        // Write 2 enable
+    output  logic       mem_r_en1_o,        // Read 1 enable
+    output  logic       mem_r_en2_o,        // Read 2
+    output  logic       mem_w_en2_o,        // Write 2 enable
 
     // Other System outputs
-    output logic        csr_w_o,            // Control and Status Register write enable
-    output logic        intr_taken_o        // Signal for interrupt taken
+    output  logic       csr_w_o,            // Control and Status Register write enable
+    output  logic       intr_taken_o        // Signal for interrupt taken
 );
 
     // FSM states
     typedef enum {FETCH, EXEC, WRITEBACK, INTR} state_e;
     
     // State trackers
-    state_e present_state = FETCH, 
-            next_state    = FETCH;
+    state_e present_state = FETCH; 
+    state_e next_state    = FETCH;
     
     // Transition state on clock posedge
     always_ff @ (posedge clk_i) begin
@@ -69,7 +69,7 @@ module cu_fsm
         csr_w_o             = '0;
         intr_taken_o        = '0;
 
-        next_state      = FETCH;    // Continue processing instructions
+        next_state          = FETCH;    // Continue processing instructions
 
         // Update outpus depending on state and inputs
         unique case (present_state)
@@ -100,26 +100,26 @@ module cu_fsm
                     // Memory reading and Register File writing event, trigger writeback,
                     // ignoring incoming interrupts
                     LOAD: begin
-                        mem_r_en2_o     = '1;
-                        next_state      = WRITEBACK;
+                        mem_r_en2_o = '1;
+                        next_state  = WRITEBACK;
                     end
                     
                     // Memory write
                     STORE: begin
-                        mem_w_en2_o     = '1;
-                        next_state      = intr_i ?  INTR    :   FETCH;
+                        mem_w_en2_o = '1;
+                        next_state  = intr_i ?  INTR    :   FETCH;
                     end
                     
                     // TODO: Verify
                     SYSTEM: begin
                         if (csr_func_i == _RW) begin
-                            csr_w_o     = '1;
+                            csr_w_o = '1;
                         end
                     end
                     
                     // ALU and Branch/Jump operations
                     default: begin
-                        next_state      = intr_i ?  INTR    :   FETCH;
+                        next_state  = intr_i ?  INTR    :   FETCH;
                     end
                 endcase
             end // EXEC end

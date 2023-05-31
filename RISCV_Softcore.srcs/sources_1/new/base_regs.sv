@@ -22,18 +22,18 @@ module base_regs
     import rv32i::word;
 (
     // Control Signals
-    input logic clk_i,                  // Clock
-    input logic reset_i,                // Resest    
+    input   logic       clk_i,          // Clock
+    input   logic       reset_i,        // Resest    
 
     // Async read
-    input logic [4:0]   r_addr1_i,      // Read address 1
-    input logic [4:0]   r_addr2_i,      //  2
-    output word         r_data1_o,      // Read data 1
-    output word         r_data2_o,      //  2
+    input   logic [4:0] r_addr1_i,      // Read address 1
+    input   logic [4:0] r_addr2_i,      //  2
+    output  word        r_data1_o,      // Read data 1
+    output  word        r_data2_o,      //  2
         
     // Sync write
     input               w_en_i,         // Write enable
-    input word          w_addr_i,       // Write address
+    input logic [4:0]   w_addr_i,       // Write address
     input word          w_data_i        // Write data
 );
 

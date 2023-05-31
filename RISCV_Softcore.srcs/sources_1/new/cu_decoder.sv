@@ -18,9 +18,8 @@
 
 
 module cu_decoder
-    import rv32i::word;
+    import rv32i::*;
     import rv32i_opcode::*;
-    import rv32i::instruction_u;
     import rv32i_functions::*;
 #(
     // ALU op1 sources
@@ -46,19 +45,19 @@ module cu_decoder
 )
 (
     // Raw instruction data
-    input word              raw_instr_i,
+    input   word            raw_instr_i,
     
     // ALU control signals
-    output logic            alu_src_op1_o,
-    output logic    [1:0]   alu_src_op2_o,
-    output alu_func_e       alu_func_o,
+    output  logic           alu_src_op1_o,
+    output  logic [1:0]     alu_src_op2_o,
+    output  alu_func_e      alu_func_o,
     
     // Base Register control signal
-    output logic    [1:0]   base_reg_src_o,
+    output  logic    [1:0]  base_reg_src_o,
  
     // Decoded instruction data
-    output instruction_u    instr_o,
-    output word             immed_o
+    output  instruction_u   instr_o,
+    output  word            immed_o
 );
 
     // Mapping raw instruction to type
@@ -83,7 +82,7 @@ module cu_decoder
                 alu_src_op1_o   = ALU_SRC_IMMED;
                 alu_func_o      = _COPY;
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT;
-                immed_o         = {instr.utype_s.raw_immed, {12{1'b0}}};
+                immed_o         = {instr_o.utype_s.raw_immed, {12{1'b0}}};
             end
 
             AUIPC: begin
@@ -95,7 +94,7 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_PC;
                 alu_func_o      = _ADD;
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT;
-                immed_o         = {instr.utype_s.raw_immed, {12{1'b0}}};
+                immed_o         = {instr_o.utype_s.raw_immed, {12{1'b0}}};
             end
 
             JAL: begin
@@ -105,10 +104,10 @@ module cu_decoder
 
                 base_reg_src_o  = BASE_REG_SRC_PC_4;
                 immed_o         = {
-                    {12{instr.jtype_s.raw_immed[19]}}, 
-                    instr.jtype_s.raw_immed[7:0], 
-                    instr.jtype_s.raw_immed[8], 
-                    instr.jtype_s.raw_immed[18:9], 
+                    {12{instr_o.jtype_s.raw_immed[19]}}, 
+                    instr_o.jtype_s.raw_immed[7:0], 
+                    instr_o.jtype_s.raw_immed[8], 
+                    instr_o.jtype_s.raw_immed[18:9], 
                     1'b0};  // byte aligned
             end
 
@@ -123,7 +122,7 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_IMMED;
                 alu_func_o      = _ADD;
                 base_reg_src_o  = BASE_REG_SRC_PC_4;
-                immed_o         = instr.itype_s.raw_immed;
+                immed_o         = instr_o.itype_s.raw_immed;
             end
 
             BRANCH: begin
@@ -135,7 +134,7 @@ module cu_decoder
 
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_RS2;
-                unique case (instr.btype_s.func3)
+                unique case (instr_o.btype_s.func3)
                     _EQ: alu_func_o = _BEQ;
                     _NE: alu_func_o = _BEQ;
                     _LT: alu_func_o = _BLT;
@@ -143,11 +142,11 @@ module cu_decoder
                     _LTU: alu_func_o = _BLTU;
                     _GEU: alu_func_o = _BLTU;
                 endcase
-                immed_o         = {
-                    {20{instr.btype_s.raw_immed_2[6]}}, 
-                    instr.btype_s.raw_immed_1[0], 
-                    instr.btype_s.raw_immed_2[5:0], 
-                    instr.btype_s.raw_immed_1[4:1],
+                immed_o = {
+                    {20{instr_o.btype_s.raw_immed_2[6]}}, 
+                    instr_o.btype_s.raw_immed_1[0], 
+                    instr_o.btype_s.raw_immed_2[5:0], 
+                    instr_o.btype_s.raw_immed_1[4:1],
                     1'b0};  // byte aligned
             end
 
@@ -162,7 +161,7 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_IMMED;
                 alu_func_o      = _ADD;
                 base_reg_src_o  = BASE_REG_SRC_MEM;
-                immed_o         = instr.itype_s.raw_immed;
+                immed_o         = instr_o.itype_s.raw_immed;
             end
 
             STORE: begin
@@ -176,9 +175,9 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_IMMED;
                 alu_func_o      = _ADD;
                 immed_o         = {
-                    {20{instr.itype_s.raw_immed_2[6]}},
-                    instr.itype_s.raw_immed_2[6:0],
-                    instr.itype_s.raw_immed_1[4:0]};
+                    {20{instr_o.stype_s.raw_immed_2[6]}},
+                    instr_o.stype_s.raw_immed_2[6:0],
+                    instr_o.stype_s.raw_immed_1[4:0]};
             end
 
             OP_IMM: begin
@@ -192,13 +191,13 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_IMMED;
 
                 // Handle special I-Type cases: shift right (SR**) and shift left (SL**)
-                if (instr.itype_s.func3 == 3'b001 || instr.itype_s.func3 == 3'b101)
-                    alu_func_o  = alu_func_e'({instr.itype_s.imm12[10], instr.itype_s.func3});
+                if (instr_o.itype_s.func3 == 3'b001 || instr_o.itype_s.func3 == 3'b101)
+                    alu_func_o  = alu_func_e'({instr_o.itype_s.raw_immed[10], instr_o.itype_s.func3});
                 else
-                    alu_func_o  = alu_func_e'({1'b0, instr.itype_s.func3});
+                    alu_func_o  = alu_func_e'({1'b0, instr_o.itype_s.func3});
                     
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT;
-                immed_o         = instr.itype_s.raw_immed;
+                immed_o         = instr_o.itype_s.raw_immed;
             end
 
             OP: begin
@@ -211,7 +210,7 @@ module cu_decoder
 
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_RS2;
-                alu_func_o      = alu_func_e'({1'b0, instr.itype_s.func3});    
+                alu_func_o      = alu_func_e'({1'b0, instr_o.itype_s.func3});    
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT; 
             end
         endcase

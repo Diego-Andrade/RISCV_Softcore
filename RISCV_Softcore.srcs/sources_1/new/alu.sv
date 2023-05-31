@@ -21,13 +21,13 @@ module alu
     import rv32i::word;
     import rv32i_functions::*;
 (
-    input alu_func_e    alu_func_i,     // ALU function to perform
-    input word          op1_i,          // Operand 1
-    input word          op2_i,          // Operand 2
+    input   alu_func_e  alu_func_i,     // ALU function to perform
+    input   word        op1_i,          // Operand 1
+    input   word        op2_i,          // Operand 2
 
-    output word         result_o        // Result of operation
+    output  word        result_o        // Result of operation
 );
- 
+
     always_comb begin
         unique case (alu_func_i)
             _ADD:   result_o = op1_i + op2_i;

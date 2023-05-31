@@ -1,178 +1,143 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Engineer: Diego Andrade (bets636@gmail.com)
 // 
 // Create Date: 05/11/2023 11:26:04 PM
-// Design Name: 
+// Design Name: RISCV Softcore
 // Module Name: ram_dualport
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
+// Project Name: RISCV_Softcore
+// Target Devices: Xilinx Atrix-7
+// Description: Byte addressable dual port ram
 // 
-// Dependencies: 
+// Dependencies: riscv_isa.sv
 // 
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//      Currently not supporting missaligned access, but framework left for support
+//      in the future
+//
 //////////////////////////////////////////////////////////////////////////////////
 
-
-module ram_dualport
+module ram_dualport 
     import rv32i::word;
-(MEM_CLK,MEM_ADDR1,MEM_ADDR2,MEM_DIN2,MEM_WRITE2,MEM_READ1,MEM_READ2,ERR,MEM_DOUT1,MEM_DOUT2,IO_IN,IO_WR,MEM_SIZE,MEM_SIGN);
-        
-    parameter ACTUAL_WIDTH=14;  //32KB     16K x 32
-    parameter NUM_COL = 4;
-    parameter COL_WIDTH = 8;
+    import rv32i_functions::*;
+#(
+    parameter ADDRESS_SIZE = 14
+)
+(
+    // Control signals
+    input   logic       clk_i,
+    input   logic       reset_i,
+
+    // Port 1
+    input   logic       r_en1_i,
+    input   word        addr1_i,
+    output  word        r_data1_o,
     
-    input [31:0] MEM_ADDR1;     //Instruction Memory Port
-    input [31:0] MEM_ADDR2;     //Data Memory Port
-    input MEM_CLK;
-    input [31:0] MEM_DIN2;
-    input MEM_WRITE2;
-    input MEM_READ1;
-    input MEM_READ2;
-    //input [1:0] MEM_BYTE_EN1;
-    //input [1:0] MEM_BYTE_EN2;
-    input [31:0] IO_IN;
-    output ERR;
-    input [1:0] MEM_SIZE;
-    input MEM_SIGN;
-    output logic [31:0] MEM_DOUT1;
-    output logic [31:0] MEM_DOUT2;
-    output logic IO_WR;
+    // Port 2
+    input   logic       r_en2_i,
+    input   word        addr2_i,
+    input   size_func_e size2_i,        // Whether accesing byte, halfword, or word
+    output  word        r_data2_o,
     
-    logic saved_mem_sign;
-    logic [1:0] saved_mem_size;
-    logic [31:0] saved_mem_addr2;
-    
-    wire [ACTUAL_WIDTH-1:0] memAddr1,memAddr2;
-    logic memWrite2;  
-    logic [31:0] memOut2;
-    logic [31:0] ioIn_buffer=0;
-    logic [NUM_COL-1:0] weA;
-   
-    assign memAddr1 =MEM_ADDR1[ACTUAL_WIDTH+1:2];
-    assign memAddr2 =MEM_ADDR2[ACTUAL_WIDTH+1:2];
-    
+    input   logic       w_en2_i,
+    input   word        w_data2_i
+);
+
+    // RAM definition
     (* rom_style="{distributed | block}" *) 
-    (* ram_decomp = "power" *) logic [31:0] memory [0:2**ACTUAL_WIDTH-1];
-    
-    initial begin
-        $readmemh("otter_memory.mem", memory, 0, 2**ACTUAL_WIDTH-1);
-    end 
-    
+    (* ram_decomp = "power" *) 
+    word memory [0:(2**ADDRESS_SIZE)-1];
 
-    always_comb
-    begin
-        case(MEM_SIZE)
-                0:  weA = 4'b1 << MEM_ADDR2[1:0];   //sb
-                1:  weA =4'b0011 << MEM_ADDR2[1:0];  //sh      //Not supported if across word boundary
-                2:  weA=4'b1111;                    //sw        //Not supported if across word boundary
-                default: weA=4'b0000;
-        endcase
-    end
-    integer i,j;
-    always_ff @(posedge MEM_CLK) begin
-        //PORT 2  //Data
-        if(memWrite2)
-        begin
-            j=0;
-            for(i=0;i<NUM_COL;i=i+1) begin
-                if(weA[i]) begin
-                        case(MEM_SIZE)
-                            0: memory[memAddr2][i*COL_WIDTH +: COL_WIDTH] <= MEM_DIN2[7:0]; //MEM_DIN2[(3-i)*COL_WIDTH +: COL_WIDTH];
-                            1: begin 
-                                    memory[memAddr2][i*COL_WIDTH +: COL_WIDTH] <= MEM_DIN2[j*COL_WIDTH +: COL_WIDTH];
-                                    j=j+1;
-                               end
-                            2: memory[memAddr2][i*COL_WIDTH +: COL_WIDTH] <= MEM_DIN2[i*COL_WIDTH +: COL_WIDTH];
-                            default:  memory[memAddr2][i*COL_WIDTH +: COL_WIDTH] <= MEM_DIN2[i*COL_WIDTH +: COL_WIDTH];
-                        endcase
-                end
-            end
-         end
-        if(MEM_READ2)
-            memOut2 <= memory[memAddr2]; 
-        //PORT 1  //Instructions
-        if(MEM_READ1)
-            MEM_DOUT1 <= memory[memAddr1];  
-            
-        saved_mem_size <= MEM_SIZE;
-        saved_mem_sign <= MEM_SIGN;
-        saved_mem_addr2 <=MEM_ADDR2;
-    end
-    
-    //Check for misalligned or out of bounds memory accesses
-    assign ERR = ((MEM_ADDR1 >= 2**ACTUAL_WIDTH)|| (MEM_ADDR2 >= 2**ACTUAL_WIDTH)
-                    || MEM_ADDR1[1:0] != 2'b0 || MEM_ADDR2[1:0] !=2'b0)? 1 : 0; 
-            
-    
-    always_ff @(posedge MEM_CLK)
-        if(MEM_READ2)
-            ioIn_buffer<=IO_IN;       
- 
-//===  Second cycle ==== Post Processing ==============================
-    logic [31:0] memOut2_sliced=32'b0;
-   
-    always_comb
-    begin
-            memOut2_sliced=32'b0;
-  
-            case({saved_mem_sign,saved_mem_size})
-                0: case(saved_mem_addr2[1:0])
-                        3:  memOut2_sliced = {{24{memOut2[31]}},memOut2[31:24]};      //lb     //endianess
-                        2:  memOut2_sliced = {{24{memOut2[23]}},memOut2[23:16]};
-                        1:  memOut2_sliced = {{24{memOut2[15]}},memOut2[15:8]};
-                        0:  memOut2_sliced = {{24{memOut2[7]}},memOut2[7:0]};
-                   endcase
-                        
-                1: case(saved_mem_addr2[1:0])
-                        3: memOut2_sliced = {{16{memOut2[31]}},memOut2[31:24]};      //lh   //spans two words, NOT YET SUPPORTED!
-                        2: memOut2_sliced = {{16{memOut2[31]}},memOut2[31:16]};
-                        1: memOut2_sliced = {{16{memOut2[23]}},memOut2[23:8]};
-                        0: memOut2_sliced = {{16{memOut2[15]}},memOut2[15:0]};
-                   endcase
-                2: case(saved_mem_addr2[1:0])
-                        1: memOut2_sliced = memOut2[31:8];   //spans two words, NOT YET SUPPORTED!
-                        0: memOut2_sliced = memOut2;      //lw     
-                   endcase
-                4: case(saved_mem_addr2[1:0])
-                        3:  memOut2_sliced = {24'd0,memOut2[31:24]};      //lbu
-                        2:  memOut2_sliced = {24'd0,memOut2[23:16]};
-                        1:  memOut2_sliced = {24'd0,memOut2[15:8]};
-                        0:  memOut2_sliced = {24'd0,memOut2[7:0]};
-                   endcase
-                5: case(saved_mem_addr2[1:0])
-                        3: memOut2_sliced = {16'd0,memOut2};      //lhu //spans two words, NOT YET SUPPORTED!
-                        2: memOut2_sliced = {16'd0,memOut2[31:16]};
-                        1: memOut2_sliced = {16'd0,memOut2[23:8]};
-                        0: memOut2_sliced = {16'd0,memOut2[15:0]};
-                   endcase
-            endcase
-    end
- 
-    always_comb begin
-        if(saved_mem_addr2 >= 32'h11000000)      
-            MEM_DOUT2 = ioIn_buffer;  
-        else 
-            MEM_DOUT2 = memOut2_sliced;   
-    end 
+    // Mapping byte addressable to word addressable
+    // Port 1
+    logic [ADDRESS_SIZE-1: 0]   word_addr1;
+    assign word_addr1 = addr1_i[(ADDRESS_SIZE-1)+2:2];
 
-    always_comb begin
-        IO_WR=0;
-        if(MEM_ADDR2 >= 32'h11000000)
-        begin       
-            if(MEM_WRITE2) IO_WR = 1;
-            memWrite2=0; 
+    // Port 2
+    logic [ADDRESS_SIZE-1: 0]   word_addr2;
+    logic [1:0]                 byte_addr2;
+    assign word_addr2 = addr2_i[(ADDRESS_SIZE-1)+2:2];
+    assign byte_addr2 = addr2_i[1:0];
+
+    // Address validation
+    logic valid_addr1;
+    assign valid_addr1 = word_addr1 < (2**ADDRESS_SIZE);
+
+    logic valid_addr2;
+    assign valid_addr2 = word_addr1 < (2**ADDRESS_SIZE) && (
+                         (size2_i == _B || size2_i == _BU) ||
+                         ((size2_i == _HW || size2_i == _HWU) && byte_addr2[0] == 1'b0) ||      // Halfword aligned
+                         (size2_i == _W && byte_addr2 == 2'b0));                                // Word aligned
+
+    // Synced memory reads and writes
+    always_ff @ (posedge clk_i) begin
+        if (reset_i) begin
+            memory <= '{default: 0};
         end
-        else begin 
-            memWrite2=MEM_WRITE2;
-        end    
-    end 
-        
+        else begin
+            // Defaults
+            r_data1_o <= '0;
+            r_data2_o <= '0;
+
+            // Port 1
+            if (r_en1_i && valid_addr1) begin
+                r_data1_o <= memory[word_addr1];
+            end
+
+            // Port 2
+            // Reading
+            if (r_en2_i && valid_addr2) begin
+                case (size2_i)
+                    _B: unique case (byte_addr2)
+                        0: r_data2_o <= {{24{memory[word_addr2][7]}},  memory[word_addr2][7:0]};           
+                        1: r_data2_o <= {{24{memory[word_addr2][15]}}, memory[word_addr2][15:8]};
+                        2: r_data2_o <= {{24{memory[word_addr2][23]}}, memory[word_addr2][23:16]};
+                        3: r_data2_o <= {{24{memory[word_addr2][31]}}, memory[word_addr2][31:24]};
+                    endcase   
+
+                    _BU: unique case (byte_addr2)
+                        0: r_data2_o <= {{24{1'b0}},  memory[word_addr2][7:0]};           
+                        1: r_data2_o <= {{24{1'b0}}, memory[word_addr2][15:8]};
+                        2: r_data2_o <= {{24{1'b0}}, memory[word_addr2][23:16]};
+                        3: r_data2_o <= {{24{1'b0}}, memory[word_addr2][31:24]};
+                    endcase
+
+                    _HW: unique case (byte_addr2[1])
+                        0: r_data2_o <= {{16{memory[word_addr2][15]}}, memory[word_addr2][15:0]};           
+                        1: r_data2_o <= {{16{memory[word_addr2][31]}}, memory[word_addr2][31:16]};
+                    endcase
+
+                    _HWU: unique case (byte_addr2[1])
+                        0: r_data2_o <= {{24{1'b0}}, memory[word_addr2][15:0]};           
+                        1: r_data2_o <= {{24{1'b0}}, memory[word_addr2][31:16]};
+                    endcase
+
+                    default: r_data2_o <= memory[word_addr2];   // Note: Reading word on incorrect func3
+                endcase
+            end
+
+            // Writing
+            if (w_en2_i && valid_addr2) begin
+                case (size2_i)
+                    _B: unique case (byte_addr2)
+                        0: memory[word_addr2][7:0]   <= w_data2_i[7:0];           
+                        1: memory[word_addr2][15:8]  <= w_data2_i[15:8];
+                        2: memory[word_addr2][23:16] <= w_data2_i[23:16];
+                        3: memory[word_addr2][31:24] <= w_data2_i[31:24];
+                    endcase   
+
+                    _HW: unique case (byte_addr2[1])
+                        0: memory[word_addr2][15:0]  <= w_data2_i[15:0];           
+                        1: memory[word_addr2][31:16] <= w_data2_i[15:0];
+                    endcase
+
+                    default: memory[word_addr2] <= w_data2_i;
+
+                endcase
+            end
+        end
+    end
 
 endmodule
+

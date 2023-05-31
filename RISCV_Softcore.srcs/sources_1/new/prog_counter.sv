@@ -21,15 +21,15 @@ module prog_counter
     import rv32i::word;
 (
     // Control Signals
-    input logic     clk_i,          // Clock
-    input logic     reset_i,        // Reset
+    input   logic   clk_i,          // Clock
+    input   logic   reset_i,        // Reset
     
     // Writes
-    input logic     w_en_i,         // Write enable
-    input word      w_data_i,       // Write data
+    input   logic   w_en_i,         // Write enable
+    input   word    w_data_i,       // Write data
  
     // Status
-    output word     prog_count_o    // Program count
+    output  word    prog_count_o    // Program count
 );
 
     // Setup
@@ -43,7 +43,7 @@ module prog_counter
             prog_count_o <= 0;
         end
         else if (w_en_i) begin
-            prog_count_o <= data_i;
+            prog_count_o <= w_data_i;
         end
     end
 
