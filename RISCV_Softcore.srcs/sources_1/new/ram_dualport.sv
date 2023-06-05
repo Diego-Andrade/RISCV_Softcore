@@ -22,7 +22,7 @@ module ram_dualport
     import rv32i::word;
     import rv32i_functions::*;
 #(
-    parameter ADDRESS_SIZE = 14
+    parameter ADDRESS_SIZE = 4 // 14
 )
 (
     // Control signals
@@ -45,19 +45,23 @@ module ram_dualport
 );
 
     // RAM definition
-    (* rom_style="{distributed | block}" *) 
+    (* rom_style="block" *) 
     (* ram_decomp = "power" *) 
     word memory [0:(2**ADDRESS_SIZE)-1];
+    
+    initial begin
+        $readmemh("program.mem", memory, 0, 2**ADDRESS_SIZE-1);
+    end
 
     // Mapping byte addressable to word addressable
     // Port 1
     logic [ADDRESS_SIZE-1: 0]   word_addr1;
-    assign word_addr1 = addr1_i[(ADDRESS_SIZE-1)+2:2];
+    assign word_addr1 = {'0, addr1_i[(ADDRESS_SIZE-1)+2:2]};
 
     // Port 2
     logic [ADDRESS_SIZE-1: 0]   word_addr2;
     logic [1:0]                 byte_addr2;
-    assign word_addr2 = addr2_i[(ADDRESS_SIZE-1)+2:2];
+    assign word_addr2 = {'0, addr2_i[(ADDRESS_SIZE-1)+2:2]};
     assign byte_addr2 = addr2_i[1:0];
 
     // Address validation

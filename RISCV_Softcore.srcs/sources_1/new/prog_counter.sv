@@ -32,10 +32,10 @@ module prog_counter
     output  word    prog_count_o    // Program count
 );
 
-    // Setup
-    initial begin
-        prog_count_o = 0;
-    end
+//    // Setup
+//    initial begin
+//        prog_count_o = 0;
+//    end
 
     // Sync update
     always_ff @ (posedge clk_i) begin

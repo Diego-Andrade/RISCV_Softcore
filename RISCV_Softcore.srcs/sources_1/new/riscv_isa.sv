@@ -60,6 +60,7 @@ package rv32i_functions;
         _BEQ    = {1'b1, 3'b010},
         _BLT    = {1'b1, 3'b011},
         _BLTU   = {1'b1, 3'b100},
+        _EXTRA  = {1'b1, 3'b110},
         _NONE   = {1'b1, 3'b111}
     } alu_func_e;
 

@@ -6,9 +6,9 @@
 #####################################################################################
 ## Clock Signal
 #####################################################################################
-set_property PACKAGE_PIN W5 [get_ports clk_i]
-	set_property IOSTANDARD LVCMOS33 [get_ports clk_i]
-	create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clk_i]
+set_property PACKAGE_PIN W5 [get_ports CLK]
+	set_property IOSTANDARD LVCMOS33 [get_ports CLK]
+	create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports CLK]
 
 #####################################################################################
 ## Switches
@@ -86,48 +86,53 @@ set_property PACKAGE_PIN L1 [get_ports {LEDS[15]}]
 ## 7 Segment Display - Common cathodes across all segments, selectable via different
 ## anodes
 #####################################################################################
-set_property PACKAGE_PIN W7 [get_ports {CATHODES[6]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[6]}]
-set_property PACKAGE_PIN W6 [get_ports {CATHODES[5]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[5]}]
-set_property PACKAGE_PIN U8 [get_ports {CATHODES[4]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[4]}]
-set_property PACKAGE_PIN V8 [get_ports {CATHODES[3]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[3]}]
-set_property PACKAGE_PIN U5 [get_ports {CATHODES[2]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[2]}]
-set_property PACKAGE_PIN V5 [get_ports {CATHODES[1]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[1]}]
-set_property PACKAGE_PIN U7 [get_ports {CATHODES[0]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[0]}]
+#set_property PACKAGE_PIN W7 [get_ports {CATHODES[6]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[6]}]
+#set_property PACKAGE_PIN W6 [get_ports {CATHODES[5]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[5]}]
+#set_property PACKAGE_PIN U8 [get_ports {CATHODES[4]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[4]}]
+#set_property PACKAGE_PIN V8 [get_ports {CATHODES[3]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[3]}]
+#set_property PACKAGE_PIN U5 [get_ports {CATHODES[2]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[2]}]
+#set_property PACKAGE_PIN V5 [get_ports {CATHODES[1]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[1]}]
+#set_property PACKAGE_PIN U7 [get_ports {CATHODES[0]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[0]}]
 
 ### DOT Segment
-set_property PACKAGE_PIN V7 [get_ports {CATHODES[7]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[7]}]
+#set_property PACKAGE_PIN V7 [get_ports {CATHODES[7]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {CATHODES[7]}]
 
 # Individual 7-Segment Anodes
-set_property PACKAGE_PIN U2 [get_ports {ANODES[0]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[0]}]
-set_property PACKAGE_PIN U4 [get_ports {ANODES[1]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[1]}]
-set_property PACKAGE_PIN V4 [get_ports {ANODES[2]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[2]}]
-set_property PACKAGE_PIN W4 [get_ports {ANODES[3]}]
-	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[3]}]
+#set_property PACKAGE_PIN U2 [get_ports {ANODES[0]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[0]}]
+#set_property PACKAGE_PIN U4 [get_ports {ANODES[1]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[1]}]
+#set_property PACKAGE_PIN V4 [get_ports {ANODES[2]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[2]}]
+#set_property PACKAGE_PIN W4 [get_ports {ANODES[3]}]
+#	set_property IOSTANDARD LVCMOS33 [get_ports {ANODES[3]}]
 	
 #####################################################################################
 ## Buttons
 #####################################################################################
-set_property PACKAGE_PIN U18 [get_ports BTNC]
-	set_property IOSTANDARD LVCMOS33 [get_ports BTNC]
-set_property PACKAGE_PIN T18 [get_ports BTNU]
-	set_property IOSTANDARD LVCMOS33 [get_ports BTNU]
-set_property PACKAGE_PIN W19 [get_ports BTNL]
-	set_property IOSTANDARD LVCMOS33 [get_ports BTNL]
-set_property PACKAGE_PIN T17 [get_ports BTNR]
-	set_property IOSTANDARD LVCMOS33 [get_ports BTNR]
-set_property PACKAGE_PIN U17 [get_ports BTND]
-	set_property IOSTANDARD LVCMOS33 [get_ports BTND]
+# C-
+set_property PACKAGE_PIN U18 [get_ports RESET]
+	set_property IOSTANDARD LVCMOS33 [get_ports RESET]
+# U-
+#set_property PACKAGE_PIN T18 [get_ports BTNU]
+#	set_property IOSTANDARD LVCMOS33 [get_ports BTNU]
+# L-
+#set_property PACKAGE_PIN W19 [get_ports BTNL]
+#	set_property IOSTANDARD LVCMOS33 [get_ports BTNL]
+# R-
+#set_property PACKAGE_PIN T17 [get_ports BTNR]
+#	set_property IOSTANDARD LVCMOS33 [get_ports BTNR]
+# D-
+#set_property PACKAGE_PIN U17 [get_ports BTND]
+#	set_property IOSTANDARD LVCMOS33 [get_ports BTND]
 	
 #####################################################################################
 ## Pmod Header JA
@@ -276,10 +281,10 @@ set_property PACKAGE_PIN U17 [get_ports BTND]
 #####################################################################################
 ## USB-RS232 Interface
 #####################################################################################
-set_property PACKAGE_PIN B18 [get_ports RX]
-	set_property IOSTANDARD LVCMOS33 [get_ports RX]
-set_property PACKAGE_PIN A18 [get_ports TX]
-	set_property IOSTANDARD LVCMOS33 [get_ports TX]
+#set_property PACKAGE_PIN B18 [get_ports RX]
+#	set_property IOSTANDARD LVCMOS33 [get_ports RX]
+#set_property PACKAGE_PIN A18 [get_ports TX]
+#	set_property IOSTANDARD LVCMOS33 [get_ports TX]
 
 #####################################################################################
 ## USB HID (PS/2)

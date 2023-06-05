@@ -47,7 +47,7 @@ module cu_fsm
 );
 
     // FSM states
-    typedef enum {FETCH, EXEC, WRITEBACK, INTR} state_e;
+    typedef enum logic [1:0] {FETCH, EXEC, WRITEBACK, INTR} state_e;
     
     // State trackers
     state_e present_state = FETCH; 
@@ -106,12 +106,14 @@ module cu_fsm
                     
                     // Memory write
                     STORE: begin
-                        mem_w_en2_o = '1;
-                        next_state  = intr_i ?  INTR    :   FETCH;
+                        prog_count_w_en_o   = '1;
+                        mem_w_en2_o         = '1;
+                        next_state          = intr_i ?  INTR    :   FETCH;
                     end
                     
                     // TODO: Verify
                     SYSTEM: begin
+                        prog_count_w_en_o   = '1;
                         if (csr_func_i == _RW) begin
                             csr_w_o = '1;
                         end
@@ -119,6 +121,7 @@ module cu_fsm
                     
                     // ALU and Branch/Jump operations
                     default: begin
+                        prog_count_w_en_o   = '1;
                         next_state  = intr_i ?  INTR    :   FETCH;
                     end
                 endcase

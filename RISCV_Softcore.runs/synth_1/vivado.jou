@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.1 (64-bit)
+# SW Build 3865809 on Sun May  7 15:04:56 MDT 2023
+# IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
+# SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
+# Start of session at: Mon Jun  5 02:42:45 2023
+# Process ID: 4683
+# Current directory: /home/diego/RISCV_Softcore/RISCV_Softcore.runs/synth_1
+# Command line: vivado -log minimal_mcu.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source minimal_mcu.tcl
+# Log file: /home/diego/RISCV_Softcore/RISCV_Softcore.runs/synth_1/minimal_mcu.vds
+# Journal file: /home/diego/RISCV_Softcore/RISCV_Softcore.runs/synth_1/vivado.jou
+# Running On: diego-XPS-15-9550, OS: Linux, CPU Frequency: 2903.176 MHz, CPU Physical cores: 4, Host memory: 16587 MB
+#-----------------------------------------------------------
+source minimal_mcu.tcl -notrace

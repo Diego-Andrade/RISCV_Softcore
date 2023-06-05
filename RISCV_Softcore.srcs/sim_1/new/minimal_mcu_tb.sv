@@ -2,12 +2,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 // Engineer: Diego Andrade (bets636@gmail.com)
 // 
-// Create Date: 04/10/2023 10:46:32 PM
+// Create Date: 06/03/2023 11:22:25 PM
 // Design Name: RISCV Softcore 
-// Module Name: softcore_tb
+// Module Name: minimal_mcu_tb
 // Project Name: RISCV_Softcore
 // Target Devices: Xilinx Artix-7
-// Description: Simulation of softcore as a whole
+// Description: Simulation of MCU as a whole
 // 
 // Dependencies: 
 // 
@@ -18,28 +18,27 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module softcore_tb();
-    
-    import rv32i::word;
+module minimal_mcu_tb();
     
     logic clk = 0;
-    logic reset = 1;
-    
-    word prog_count;
- 
 
     // Clock gen
     always #1ns clk = ~clk;
     
-    prog_counter pc(
-        .clk_i(clk), .reset_i(reset),
-        .w_en_i(1'b1), .w_data_i(prog_count+4),
-        .prog_count_o(prog_count));
+    logic reset = 0;
+    logic [15:0] leds = 0;
+    logic [15:0] switches = 0;
+    
+    minimal_mcu mcu(
+        .CLK(clk),
+        .RESET(reset),
+        .LEDS(leds), .SWITCHES(switches));
     
     initial begin
-        #2ns;
+        reset = 1;
+        #3ns;
         reset = 0;
-        #50ns
+        #50ns;
         
         
         

@@ -44,6 +44,7 @@ module alu
             _BEQ:   result_o = op1_i == op2_i;
             _BLT:   result_o = $signed(op1_i) < $signed(op2_i);
             _BLTU:  result_o = op1_i < op2_i;
+            _EXTRA: result_o = 0;
             _NONE:  result_o = 0;
         endcase
     end

@@ -1,0 +1,18 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"../../../../RISCV_Softcore.srcs/sources_1/new/riscv_isa.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/alu.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/base_regs.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/cu_decoder.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/cu_fsm.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/minimal_mcu.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/prog_counter.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/ram_dualport.sv" \
+"../../../../RISCV_Softcore.srcs/sources_1/new/softcore.sv" \
+"../../../../RISCV_Softcore.srcs/sim_1/new/minimal_mcu_tb.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

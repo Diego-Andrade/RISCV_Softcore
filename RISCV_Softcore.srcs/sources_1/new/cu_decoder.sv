@@ -73,7 +73,7 @@ module cu_decoder
         immed_o         = 0;
         
         // Handle instruction types
-        unique case (raw_instr_i[6:0])
+        case (raw_instr_i[6:0])
             LUI: begin
 //                instr.utype_s.imm20     = raw_instr_i[31:12];
 //                instr.utype_s.rd_addr   = raw_instr_i[11:7];
@@ -134,13 +134,14 @@ module cu_decoder
 
                 alu_src_op1_o   = ALU_SRC_RS1;
                 alu_src_op2_o   = ALU_SRC_RS2;
-                unique case (instr_o.btype_s.func3)
+                case (instr_o.btype_s.func3)
                     _EQ: alu_func_o = _BEQ;
                     _NE: alu_func_o = _BEQ;
                     _LT: alu_func_o = _BLT;
                     _GE: alu_func_o = _BLT;
                     _LTU: alu_func_o = _BLTU;
                     _GEU: alu_func_o = _BLTU;
+                    default: alu_func_o = _NONE;
                 endcase
                 immed_o = {
                     {20{instr_o.btype_s.raw_immed_2[6]}}, 
@@ -212,6 +213,14 @@ module cu_decoder
                 alu_src_op2_o   = ALU_SRC_RS2;
                 alu_func_o      = alu_func_e'({1'b0, instr_o.itype_s.func3});    
                 base_reg_src_o  = BASE_REG_SRC_ALU_RESULT; 
+            end
+            
+            default: begin
+                alu_src_op1_o   = ALU_SRC_RS1;
+                alu_src_op2_o   = ALU_SRC_RS2;
+                alu_func_o      = _NONE;
+                base_reg_src_o  = BASE_REG_SRC_ALU_RESULT;
+                immed_o         = 0;
             end
         endcase
     end // Comb end

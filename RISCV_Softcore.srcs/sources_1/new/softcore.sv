@@ -21,11 +21,20 @@ module softcore
     import rv32i::*;
     import rv32i_functions::*;
     import rv32i_opcode::*;
+    
+#(
+    parameter IO_SPACE=32'h00010000 
+)
 (
     input   logic   clk_i,
-    input   logic   reset_i
-    
-    
+    input   logic   reset_i,
+
+    // IO
+    output  word    io_addr_o,
+    input   word    io_data_i,
+    output  word    io_data_o,
+//    output  word    io_r_en_o,
+    output  word    io_w_en_o
 );
 
     // ---- Important signals --------------------  // TODO: Name change
@@ -61,7 +70,6 @@ module softcore
 
 // ==== Fetch ====================================
     // ---- Program Counter Mux ------------------
-    word pc_next;
     always_comb
     case (instr_decoded.rtype_s.opcode)
         JAL:        prog_count_next = prog_count + instr_immed;
@@ -74,7 +82,7 @@ module softcore
     // ---- Program Counter module ---------------
     prog_counter prog_counter(
         .clk_i(clk_i), .reset_i(reset_i), 
-        .w_en_i(prog_count_w_en), .w_data_i(pc_next),
+        .w_en_i(prog_count_w_en), .w_data_i(prog_count_next),
         .prog_count_o(prog_count));
 
 // ==== Decode ===================================
@@ -82,7 +90,7 @@ module softcore
     logic                   cu_alu_src_op1;
     logic           [1:0]   cu_alu_src_op2;
     alu_func_e              cu_alu_func;
-    logic           [3:0]   cu_base_reg_src;
+    logic           [1:0]   cu_base_reg_src;
 
     cu_decoder cu_decoder(
         .raw_instr_i(instr_raw),
@@ -131,17 +139,28 @@ module softcore
     word mem_data2;
     
     ram_dualport mem(
-        .clk_i(clk_i), .reset(reset_i),
+        .clk_i(clk_i), .reset_i(reset_i),
         .r_en1_i(mem_r_en1), .addr1_i(prog_count), .r_data1_o(instr_raw),
         .r_en2_i(mem_r_en2), .addr2_i(alu_result), 
-        .size2_i(instr_decoded.stype_s.func3), .r_data2_o(mem_data2),
+        .size2_i(size_func_e'(instr_decoded.stype_s.func3)), .r_data2_o(mem_data2),
         .w_en2_i(mem_w_en2), .w_data2_i(rs2));
+        
+    // ---- IO Handling --------------------------
+    
+    logic io_event;
+    assign io_event     = alu_result > IO_SPACE;
+
+    assign io_addr_o    = io_event ? alu_result : 32'hz;
+    assign io_data_o    = io_event && io_w_en_o ? rs2 : 32'hz;
+//    assign io_r_en_o    = io_event && mem_r_en2;
+    assign io_w_en_o    = io_event && mem_w_en2;
+
 // ==== Writeback ================================
     // ---- Base Register source mux -------------
     always_comb
     case (cu_base_reg_src)
         cu_decoder.BASE_REG_SRC_ALU_RESULT: writeback_base_reg_data = alu_result;
-        cu_decoder.BASE_REG_SRC_MEM:        writeback_base_reg_data = mem_data2;
+        cu_decoder.BASE_REG_SRC_MEM:        writeback_base_reg_data = io_event ? io_data_i : mem_data2;
         cu_decoder.BASE_REG_SRC_PC_4:       writeback_base_reg_data = prog_count + 4;
 
         default:                            writeback_base_reg_data = 0;
